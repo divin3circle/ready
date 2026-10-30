@@ -125,7 +125,7 @@ export function VTOPortraitCanvas({
                     : "contrast(1.08)",
               }}
             />
-            {/* AR Skin Zones HUD Overlay directly on user photo */}
+            {/* Live AR Skin Zones HUD Overlay directly on user photo */}
             {overlayMode === "skin-zones" && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                 {/* T-Zone Reticle */}
