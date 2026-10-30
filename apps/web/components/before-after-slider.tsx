@@ -45,7 +45,7 @@ export function BeforeAfterSlider({
       </div>
 
       <div className="relative h-80 w-full overflow-hidden sm:h-96">
-        {/* AFTER LAYER (Full width underneath) */}
+        {/* AFTER LAYER (Comparative finish glow) */}
         <div className="absolute inset-0 flex flex-col justify-between overflow-hidden bg-stone-950 p-6">
           {afterScan.imageDataUrl && (
             <div className="absolute inset-0">
