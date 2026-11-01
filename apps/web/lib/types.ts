@@ -104,6 +104,8 @@ export interface VTOLookResult {
   unitsConsumed: number
   createdAt: string
   vtoImageUrl?: string
+  renderEngine?: "gemini-full-body" | "youcam-cloth"
+  renderError?: string
 }
 
 export interface PlanTask {

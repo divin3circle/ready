@@ -20,6 +20,9 @@ interface VTOPortraitCanvasProps {
   makeup: MakeupPrescription
   vtoImageUrl?: string
   isGenerating?: boolean
+  renderEngine?: "gemini-full-body" | "youcam-cloth"
+  renderError?: string
+  onGenerate?: () => void
   viewMode?: "vto" | "skin-zones"
   badgeText?: string
   compact?: boolean
@@ -31,6 +34,9 @@ export function VTOPortraitCanvas({
   makeup,
   vtoImageUrl,
   isGenerating = false,
+  renderEngine,
+  renderError,
+  onGenerate,
   viewMode = "vto",
   badgeText,
   compact = false,
@@ -124,10 +130,10 @@ export function VTOPortraitCanvas({
               </div>
               <div>
                 <div className="font-heading text-sm font-bold text-white tracking-wide">
-                  YouCam Cloth VTO Engine
+                  Generating your full-body look
                 </div>
                 <div className="font-mono text-xs text-emerald-300/90 mt-0.5">
-                  Fitting {outfit.name}...
+                  Dressing you in {outfit.name}…
                 </div>
               </div>
               <div className="w-48 overflow-hidden rounded-full bg-white/10 p-0.5">
@@ -137,26 +143,22 @@ export function VTOPortraitCanvas({
           </div>
         )}
 
-        {/* CASE 1: Photorealistic Live YouCam Cloth VTO Try-On Result */}
+        {/* CASE 1: Generated full-body try-on of the real user */}
         {overlayMode === "vto" && vtoImageUrl ? (
           <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={vtoImageUrl}
-              alt={`YouCam VTO - ${outfit.name}`}
+              alt={`You wearing ${outfit.name}`}
               className="h-full w-full object-contain transition-all duration-500"
             />
-            {/* Subtle cosmetic finish glow */}
-            <div
-              className="pointer-events-none absolute inset-0 mix-blend-soft-light"
-              style={{
-                background: `radial-gradient(circle at 50% 30%, ${makeup.foundationHex}44, transparent 65%)`,
-              }}
-            />
-            {/* Verified YouCam Cloth VTO Badge */}
             <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-stone-900/85 px-2.5 py-1 text-[10px] font-medium text-emerald-400 backdrop-blur-md">
               <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>YouCam Neural Cloth VTO Active</span>
+              <span>
+                {renderEngine === "youcam-cloth"
+                  ? "YouCam Cloth VTO"
+                  : "Full-Body AI Try-On"}
+              </span>
             </div>
           </div>
         ) : overlayMode === "skin-zones" && scan.imageDataUrl ? (
@@ -185,8 +187,50 @@ export function VTOPortraitCanvas({
               </div>
             </div>
           </div>
+        ) : overlayMode === "vto" && scan.imageDataUrl ? (
+          /* CASE 2b: Real selfie exists but the full-body look hasn't been generated (yet) */
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={scan.imageDataUrl}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+            />
+            <div className="relative z-10 flex max-w-xs flex-col items-center gap-4 px-6 text-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={scan.imageDataUrl}
+                alt="Your selfie"
+                className="size-24 rounded-full border-2 border-white/30 object-cover shadow-xl"
+              />
+              <div>
+                <div className="font-heading text-sm font-bold text-white">
+                  {renderError
+                    ? "We couldn't create your full-body look"
+                    : `Ready to try on ${outfit.name}`}
+                </div>
+                <p className="mt-1 text-xs text-white/70">
+                  {renderError === "busy"
+                    ? "Our image studio is at capacity right now. Please try again in a moment."
+                    : renderError
+                      ? "Something went wrong while generating. Please try again."
+                      : "We'll generate a full-body photo of you, standing straight, wearing this outfit."}
+                </p>
+              </div>
+              {onGenerate && !isGenerating && (
+                <button
+                  type="button"
+                  onClick={onGenerate}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-md transition hover:opacity-90"
+                >
+                  <IconSparkles className="size-3.5" />
+                  {renderError ? "Try again" : "Generate my look"}
+                </button>
+              )}
+            </div>
+          </div>
         ) : (
-          /* CASE 3: High-Fashion Garment Drape Rig (Dressing the silhouette with Outfit + Skin AI Rx) */
           <>
             <svg
               viewBox="0 0 320 600"
@@ -228,13 +272,6 @@ export function VTOPortraitCanvas({
                   <stop offset="0%" stopColor="#FFFFFF" stopOpacity={isLuminous ? "0.42" : "0.14"} />
                   <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
                 </radialGradient>
-
-                {/* Real User Head Clip for Photorealistic Try-On Composite */}
-                {scan.imageDataUrl && (
-                  <clipPath id={`userHeadClip-${scan.scanId}`}>
-                    <ellipse cx="160" cy="76" rx="36" ry="46" />
-                  </clipPath>
-                )}
               </defs>
 
               {/* Editorial Studio Arch Backdrop */}
@@ -352,40 +389,7 @@ export function VTOPortraitCanvas({
                   {/* Neck */}
                   <path d="M 149 106 L 149 138 L 171 138 L 171 106 Z" fill={`url(#skinGrad-${scan.scanId})`} />
 
-                  {/* Real Person Inside the Garment vs Fallback Head */}
-                  {scan.imageDataUrl ? (
-                    <g>
-                      {/* Real User Photo seamlessly framed atop the suit collar */}
-                      <image
-                        href={scan.imageDataUrl}
-                        x="124"
-                        y="28"
-                        width="72"
-                        height="96"
-                        preserveAspectRatio="xMidYMid slice"
-                        clipPath={`url(#userHeadClip-${scan.scanId})`}
-                      />
-                      {/* Polished editorial portrait framing border */}
-                      <ellipse
-                        cx="160"
-                        cy="76"
-                        rx="36"
-                        ry="46"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.25)"
-                        strokeWidth="1.2"
-                      />
-                      {/* Zone reticles directly on user photo in skin-zones mode */}
-                      {overlayMode === "skin-zones" && (
-                        <g>
-                          <rect x="148" y="58" width="24" height="28" fill="rgba(245, 158, 11, 0.22)" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 2" />
-                          <circle cx="145" cy="80" r="10" fill="rgba(56, 189, 248, 0.2)" stroke="#38BDF8" strokeWidth="1" strokeDasharray="2 2" />
-                          <circle cx="175" cy="80" r="10" fill="rgba(244, 63, 94, 0.2)" stroke="#FB7185" strokeWidth="1" strokeDasharray="2 2" />
-                        </g>
-                      )}
-                    </g>
-                  ) : (
-                    /* Fallback vector head when no selfie photo has been captured yet */
+                  {/* Vector head (only shown when no selfie exists) */}
                     <g>
                       <path
                         d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
@@ -402,7 +406,6 @@ export function VTOPortraitCanvas({
                       <path d="M 160 72 L 159 86 Q 160 88 163 87" stroke="rgba(110,70,45,0.45)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
                       <path d="M 152 98 Q 160 101 168 98" stroke={makeup.lipHex || "#A8705C"} strokeWidth="2.2" strokeLinecap="round" fill="none" />
                     </g>
-                  )}
                 </g>
               ) : (
                 /* ---------------------------------------------------------------
@@ -451,30 +454,7 @@ export function VTOPortraitCanvas({
                     <circle cx="228" cy="330" r="5" fill={`url(#skinGrad-${scan.scanId})`} />
                   </g>
 
-                  {/* Real Person Inside the Garment vs Fallback Head */}
-                  {scan.imageDataUrl ? (
-                    <g>
-                      <image
-                        href={scan.imageDataUrl}
-                        x="124"
-                        y="28"
-                        width="72"
-                        height="96"
-                        preserveAspectRatio="xMidYMid slice"
-                        clipPath={`url(#userHeadClip-${scan.scanId})`}
-                      />
-                      <ellipse
-                        cx="160"
-                        cy="76"
-                        rx="36"
-                        ry="46"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.25)"
-                        strokeWidth="1.2"
-                      />
-                    </g>
-                  ) : (
-                    /* Fallback vector head */
+                  {/* Vector head (only shown when no selfie exists) */}
                     <g>
                       <path
                         d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
@@ -491,7 +471,6 @@ export function VTOPortraitCanvas({
                       <ellipse cx="170" cy="74" rx="4" ry="2.2" fill="#251A15" />
                       <path d="M 152 98 Q 160 104 168 98 Q 160 101 152 98 Z" fill={makeup.lipHex} />
                     </g>
-                  )}
                 </g>
               )}
             </svg>

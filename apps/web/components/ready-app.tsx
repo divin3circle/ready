@@ -386,6 +386,7 @@ export function ReadyApp() {
         headers: {
           "Content-Type": "application/json",
           ...(youcamApiKey ? { "x-youcam-key": youcamApiKey } : {}),
+          ...(geminiApiKey ? { "x-gemini-key": geminiApiKey } : {}),
         },
         body: JSON.stringify({
           scan: currentScan,
@@ -1794,11 +1795,14 @@ export function ReadyApp() {
                           makeup={activeMakeup}
                           vtoImageUrl={vtoLook?.vtoImageUrl}
                           isGenerating={isGeneratingVto}
+                          renderEngine={vtoLook?.renderEngine}
+                          renderError={vtoLook?.renderError}
+                          onGenerate={() => handleRunVtoOutfit(selectedOutfit.id)}
                           badgeText={
                             isGeneratingVto
-                              ? "Fitting with YouCam Cloth VTO..."
+                              ? "Generating full-body look..."
                               : vtoLook?.vtoImageUrl
-                              ? "YouCam Cloth VTO Active"
+                              ? `Wearing ${selectedOutfit.name}`
                               : `${activeMakeup.baseFinish}`
                           }
                         />

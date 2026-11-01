@@ -6,7 +6,11 @@ import {
   CURATED_OUTFITS,
 } from "@/lib/demo-data"
 import { resolveYouCamToken } from "@/lib/youcam-auth"
+import { generateFullBodyLook } from "@/lib/gemini-image"
 import type { OutfitOption, SkinScanResult, VTOLookResult } from "@/lib/types"
+
+// Full-body image generation + YouCam polling can take well over the default limit.
+export const maxDuration = 60
 
 const vtoCache = new Map<string, VTOLookResult>()
 
@@ -150,10 +154,13 @@ export async function POST(request: Request) {
     const apiKey = clientYouCamKey || process.env.YCE_API_KEY?.trim() || ""
 
     const cacheKey = createHash("sha256")
-      .update(`${scan.scanId}:${scan.stage}:${outfit.id}:${outfit.primaryHex}`)
+      .update(
+        `${scan.scanId}:${scan.stage}:${outfit.id}:${outfit.primaryHex}:${userImageBase64 ? userImageBase64.length : 0}`
+      )
       .digest("hex")
       .slice(0, 16)
 
+    // Only successful renders are cached, so a failed attempt can always be retried.
     const cached = vtoCache.get(cacheKey)
     if (cached && !body.forceLive) {
       return NextResponse.json({
@@ -167,7 +174,39 @@ export async function POST(request: Request) {
 
     const baseLook = buildLookForSkinAndOutfit(scan, outfit)
 
-    if (apiKey && userImageBase64) {
+    if (!userImageBase64) {
+      return NextResponse.json({ look: baseLook, cacheHit: false })
+    }
+
+    // 1) Primary: regenerate the user as a full-body, straight-pose photo wearing the outfit.
+    const geminiKey =
+      request.headers.get("x-gemini-key")?.trim() ||
+      process.env.GEMINI_API_KEY?.trim() ||
+      ""
+    let fullBodyFailure = ""
+    if (geminiKey) {
+      const fullBody = await generateFullBodyLook({
+        selfieDataUrl: userImageBase64,
+        outfit,
+        apiKey: geminiKey,
+      })
+      if (fullBody.ok) {
+        const result: VTOLookResult = {
+          ...baseLook,
+          vtoImageUrl: fullBody.imageDataUrl,
+          renderEngine: "gemini-full-body",
+          source: "youcam-live",
+          unitsConsumed: 0,
+        }
+        vtoCache.set(cacheKey, result)
+        return NextResponse.json({ look: result, cacheHit: false })
+      }
+      fullBodyFailure = fullBody.reason
+      console.warn(`[VTO] Full-body generation failed: ${fullBody.detail}`)
+    }
+
+    // 2) Fallback: YouCam Cloth VTO on the original photo (keeps the photo's framing).
+    if (apiKey) {
       const liveVto = await tryLiveYouCamClothVTO(
         userImageBase64,
         outfit,
@@ -177,20 +216,23 @@ export async function POST(request: Request) {
         const liveResult: VTOLookResult = {
           ...baseLook,
           vtoImageUrl: liveVto.resultImageUrl,
-          outfit: {
-            ...outfit,
-            imageUrl: liveVto.resultImageUrl,
-          },
+          renderEngine: "youcam-cloth",
           source: "youcam-live",
           unitsConsumed: liveVto.unitsUsed,
         }
         vtoCache.set(cacheKey, liveResult)
         return NextResponse.json({ look: liveResult, cacheHit: false })
       }
+      console.warn("[VTO] YouCam Cloth VTO fallback returned no image")
     }
 
-    vtoCache.set(cacheKey, baseLook)
-    return NextResponse.json({ look: baseLook, cacheHit: false })
+    return NextResponse.json({
+      look: {
+        ...baseLook,
+        renderError: fullBodyFailure === "quota" ? "busy" : "failed",
+      },
+      cacheHit: false,
+    })
   } catch (error) {
     return NextResponse.json(
       {
