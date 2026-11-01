@@ -1844,17 +1844,23 @@ export function ReadyApp() {
                               onChange={handleCustomOutfitUpload}
                             />
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="xs"
+                              className="h-7 text-[11px] gap-1 px-2.5 rounded-full border-border/80"
+                              title="Upload a photo of your own dress, suit, or blazer to test undertone harmony & virtual drape"
                               onClick={() =>
                                 customOutfitInputRef.current?.click()
                               }
                             >
-                              <IconUpload className="size-3.5" />
-                              Upload
+                              <IconHanger className="size-3 text-muted-foreground" />
+                              <span>+ Custom Outfit</span>
                             </Button>
                           </div>
                         </div>
+
+                        <p className="text-[11px] text-muted-foreground -mt-3">
+                          Select a curated look or tap <strong>+ Custom Outfit</strong> to upload your own garment photo and test undertone harmony.
+                        </p>
 
                         <div className="grid grid-cols-2 gap-3">
                           {visibleOutfits.map((o) => {

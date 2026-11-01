@@ -228,6 +228,13 @@ export function VTOPortraitCanvas({
                   <stop offset="0%" stopColor="#FFFFFF" stopOpacity={isLuminous ? "0.42" : "0.14"} />
                   <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
                 </radialGradient>
+
+                {/* Real User Head Clip for Photorealistic Try-On Composite */}
+                {scan.imageDataUrl && (
+                  <clipPath id={`userHeadClip-${scan.scanId}`}>
+                    <ellipse cx="160" cy="76" rx="36" ry="46" />
+                  </clipPath>
+                )}
               </defs>
 
               {/* Editorial Studio Arch Backdrop */}
@@ -345,30 +352,55 @@ export function VTOPortraitCanvas({
                   {/* Neck */}
                   <path d="M 149 106 L 149 138 L 171 138 L 171 106 Z" fill={`url(#skinGrad-${scan.scanId})`} />
 
-                  {/* Head & Masculine Haircut */}
-                  <path
-                    d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
-                    fill={`url(#skinGrad-${scan.scanId})`}
-                  />
-                  {/* Clean masculine hairline & fade */}
-                  <path
-                    d="M 134 72 C 132 42, 144 32, 160 32 C 176 32, 188 42, 186 72 C 186 78, 184 82, 182 86 L 180 86 L 180 64 Q 160 54 140 64 L 140 86 L 138 86 Z"
-                    fill="#151210"
-                  />
-
-                  {/* Groomed Facial Features (Straight Forward Expression) */}
-                  <path d="M 142 66 Q 152 63 158 66 M 162 66 Q 168 63 178 66" stroke="#221814" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                  <ellipse cx="150" cy="74" rx="4.5" ry="2.5" fill="#2B1A13" />
-                  <ellipse cx="170" cy="74" rx="4.5" ry="2.5" fill="#2B1A13" />
-                  <path d="M 160 72 L 159 86 Q 160 88 163 87" stroke="rgba(110,70,45,0.45)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-                  <path d="M 152 98 Q 160 101 168 98" stroke={makeup.lipHex || "#A8705C"} strokeWidth="2.2" strokeLinecap="round" fill="none" />
-
-                  {/* Zone reticles if in skin-zones mode */}
-                  {overlayMode === "skin-zones" && (
+                  {/* Real Person Inside the Garment vs Fallback Head */}
+                  {scan.imageDataUrl ? (
                     <g>
-                      <rect x="148" y="58" width="24" height="28" fill="rgba(245, 158, 11, 0.22)" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 2" />
-                      <circle cx="145" cy="80" r="10" fill="rgba(56, 189, 248, 0.2)" stroke="#38BDF8" strokeWidth="1" strokeDasharray="2 2" />
-                      <circle cx="175" cy="80" r="10" fill="rgba(244, 63, 94, 0.2)" stroke="#FB7185" strokeWidth="1" strokeDasharray="2 2" />
+                      {/* Real User Photo seamlessly framed atop the suit collar */}
+                      <image
+                        href={scan.imageDataUrl}
+                        x="124"
+                        y="28"
+                        width="72"
+                        height="96"
+                        preserveAspectRatio="xMidYMid slice"
+                        clipPath={`url(#userHeadClip-${scan.scanId})`}
+                      />
+                      {/* Polished editorial portrait framing border */}
+                      <ellipse
+                        cx="160"
+                        cy="76"
+                        rx="36"
+                        ry="46"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeWidth="1.2"
+                      />
+                      {/* Zone reticles directly on user photo in skin-zones mode */}
+                      {overlayMode === "skin-zones" && (
+                        <g>
+                          <rect x="148" y="58" width="24" height="28" fill="rgba(245, 158, 11, 0.22)" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 2" />
+                          <circle cx="145" cy="80" r="10" fill="rgba(56, 189, 248, 0.2)" stroke="#38BDF8" strokeWidth="1" strokeDasharray="2 2" />
+                          <circle cx="175" cy="80" r="10" fill="rgba(244, 63, 94, 0.2)" stroke="#FB7185" strokeWidth="1" strokeDasharray="2 2" />
+                        </g>
+                      )}
+                    </g>
+                  ) : (
+                    /* Fallback vector head when no selfie photo has been captured yet */
+                    <g>
+                      <path
+                        d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
+                        fill={`url(#skinGrad-${scan.scanId})`}
+                      />
+                      {/* Clean masculine hairline & fade */}
+                      <path
+                        d="M 134 72 C 132 42, 144 32, 160 32 C 176 32, 188 42, 186 72 C 186 78, 184 82, 182 86 L 180 86 L 180 64 Q 160 54 140 64 L 140 86 L 138 86 Z"
+                        fill="#151210"
+                      />
+                      <path d="M 142 66 Q 152 63 158 66 M 162 66 Q 168 63 178 66" stroke="#221814" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                      <ellipse cx="150" cy="74" rx="4.5" ry="2.5" fill="#2B1A13" />
+                      <ellipse cx="170" cy="74" rx="4.5" ry="2.5" fill="#2B1A13" />
+                      <path d="M 160 72 L 159 86 Q 160 88 163 87" stroke="rgba(110,70,45,0.45)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                      <path d="M 152 98 Q 160 101 168 98" stroke={makeup.lipHex || "#A8705C"} strokeWidth="2.2" strokeLinecap="round" fill="none" />
                     </g>
                   )}
                 </g>
@@ -419,44 +451,50 @@ export function VTOPortraitCanvas({
                     <circle cx="228" cy="330" r="5" fill={`url(#skinGrad-${scan.scanId})`} />
                   </g>
 
-                  {/* Head & Elegant Swept Hair */}
-                  <path
-                    d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
-                    fill={`url(#skinGrad-${scan.scanId})`}
-                  />
-                  <path
-                    d="M 132 78 C 128 44, 142 34, 160 34 C 178 34, 192 44, 188 78 C 190 100, 184 112, 160 112 C 136 112, 130 100, 132 78 Z"
-                    fill="#1C1512"
-                  />
-
-                  {/* Feminine Facial Features */}
-                  <ellipse cx="145" cy="78" rx="8" ry="5" fill="url(#cheekBlush)" />
-                  <ellipse cx="175" cy="78" rx="8" ry="5" fill="url(#cheekBlush)" />
-                  <path d="M 144 68 Q 152 64 158 68 M 162 68 Q 168 64 176 68" stroke="#251A15" strokeWidth="2" strokeLinecap="round" fill="none" />
-                  <ellipse cx="150" cy="74" rx="4" ry="2.2" fill="#251A15" />
-                  <ellipse cx="170" cy="74" rx="4" ry="2.2" fill="#251A15" />
-                  <path d="M 152 98 Q 160 104 168 98 Q 160 101 152 98 Z" fill={makeup.lipHex} />
+                  {/* Real Person Inside the Garment vs Fallback Head */}
+                  {scan.imageDataUrl ? (
+                    <g>
+                      <image
+                        href={scan.imageDataUrl}
+                        x="124"
+                        y="28"
+                        width="72"
+                        height="96"
+                        preserveAspectRatio="xMidYMid slice"
+                        clipPath={`url(#userHeadClip-${scan.scanId})`}
+                      />
+                      <ellipse
+                        cx="160"
+                        cy="76"
+                        rx="36"
+                        ry="46"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeWidth="1.2"
+                      />
+                    </g>
+                  ) : (
+                    /* Fallback vector head */
+                    <g>
+                      <path
+                        d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
+                        fill={`url(#skinGrad-${scan.scanId})`}
+                      />
+                      <path
+                        d="M 132 78 C 128 44, 142 34, 160 34 C 178 34, 192 44, 188 78 C 190 100, 184 112, 160 112 C 136 112, 130 100, 132 78 Z"
+                        fill="#1C1512"
+                      />
+                      <ellipse cx="145" cy="78" rx="8" ry="5" fill="url(#cheekBlush)" />
+                      <ellipse cx="175" cy="78" rx="8" ry="5" fill="url(#cheekBlush)" />
+                      <path d="M 144 68 Q 152 64 158 68 M 162 68 Q 168 64 176 68" stroke="#251A15" strokeWidth="2" strokeLinecap="round" fill="none" />
+                      <ellipse cx="150" cy="74" rx="4" ry="2.2" fill="#251A15" />
+                      <ellipse cx="170" cy="74" rx="4" ry="2.2" fill="#251A15" />
+                      <path d="M 152 98 Q 160 104 168 98 Q 160 101 152 98 Z" fill={makeup.lipHex} />
+                    </g>
+                  )}
                 </g>
               )}
             </svg>
-          {scan.imageDataUrl && overlayMode === "vto" && !vtoImageUrl && (
-            <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-2xl border border-white/15 bg-black/70 p-1.5 shadow-lg backdrop-blur-md">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={scan.imageDataUrl}
-                alt="Uploaded scan selfie"
-                className="size-10 rounded-xl object-cover border border-white/20"
-              />
-              <div className="pr-1.5 text-left">
-                <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
-                  Your Skin AI
-                </div>
-                <div className="text-[11px] font-semibold text-white">
-                  {scan.undertone} • {scan.stage}
-                </div>
-              </div>
-            </div>
-          )}
           </>
         )}
 
