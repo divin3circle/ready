@@ -71,11 +71,18 @@ async function tryLiveYouCamClothVTO(
 
     if (!srcFileId || !uploadReq?.url) return null
 
+    const uploadHeaders: Record<string, string> = {}
+    if (uploadReq.headers) {
+      for (const [k, v] of Object.entries(uploadReq.headers)) {
+        uploadHeaders[k] = String(v)
+      }
+    } else {
+      uploadHeaders["Content-Type"] = contentType
+    }
+
     await fetch(uploadReq.url, {
       method: "PUT",
-      headers: {
-        "Content-Type": uploadReq.headers?.["Content-Type"] || contentType,
-      },
+      headers: uploadHeaders,
       body: imageBuffer,
     })
 
@@ -87,7 +94,7 @@ async function tryLiveYouCamClothVTO(
       },
       body: JSON.stringify({
         src_file_id: srcFileId,
-        ref_url: outfit.imageUrl,
+        ref_file_url: outfit.imageUrl,
         garment_category: "full_body",
       }),
     })
@@ -97,8 +104,8 @@ async function tryLiveYouCamClothVTO(
     const taskId = taskData?.data?.task_id
     if (!taskId) return null
 
-    for (let attempt = 0; attempt < 6; attempt++) {
-      await new Promise((r) => setTimeout(r, 1200))
+    for (let attempt = 0; attempt < 15; attempt++) {
+      await new Promise((r) => setTimeout(r, 1500))
       const pollRes = await fetch(
         `${YCE_BASE_URL}/s2s/v2.0/task/cloth/${encodeURIComponent(taskId)}`,
         {
@@ -107,9 +114,9 @@ async function tryLiveYouCamClothVTO(
       )
       if (!pollRes.ok) continue
       const pollData = await pollRes.json()
-      if (pollData?.data?.task_status === "success") {
+      if (pollData?.data?.task_status === "success" && pollData?.data?.results?.url) {
         return {
-          resultImageUrl: pollData?.data?.results?.url,
+          resultImageUrl: pollData.data.results.url,
           unitsUsed: 2,
         }
       }
@@ -169,6 +176,7 @@ export async function POST(request: Request) {
       if (liveVto?.resultImageUrl) {
         const liveResult: VTOLookResult = {
           ...baseLook,
+          vtoImageUrl: liveVto.resultImageUrl,
           outfit: {
             ...outfit,
             imageUrl: liveVto.resultImageUrl,

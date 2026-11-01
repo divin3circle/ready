@@ -91,6 +91,7 @@ export interface VTOLookResult {
   source: "youcam-live" | "youcam-cached" | "calibrated-simulation"
   unitsConsumed: number
   createdAt: string
+  vtoImageUrl?: string
 }
 
 export interface PlanTask {

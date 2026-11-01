@@ -239,8 +239,14 @@ export function ReadyApp() {
       setCompareVtoLook(null)
       return
     }
-    setVtoLook(buildLookForSkinAndOutfit(currentScan, selectedOutfit))
-    setCompareVtoLook(buildLookForSkinAndOutfit(currentScan, compareOutfit))
+    setVtoLook((prev) => {
+      if (prev && prev.outfit.id === selectedOutfit.id) return prev
+      return buildLookForSkinAndOutfit(currentScan, selectedOutfit)
+    })
+    setCompareVtoLook((prev) => {
+      if (prev && prev.outfit.id === compareOutfit.id) return prev
+      return buildLookForSkinAndOutfit(currentScan, compareOutfit)
+    })
   }, [currentScan, selectedOutfit, compareOutfit])
 
   const refreshAgenticPlan = async (
@@ -1397,6 +1403,8 @@ export function ReadyApp() {
                           scan={currentScan}
                           outfit={selectedOutfit}
                           makeup={activeMakeup}
+                          vtoImageUrl={vtoLook?.vtoImageUrl}
+                          isGenerating={isGeneratingVto}
                           viewMode="skin-zones"
                         />
                       </div>
@@ -1654,6 +1662,7 @@ export function ReadyApp() {
                                   scan={currentScan}
                                   outfit={selectedOutfit}
                                   makeup={activeMakeup}
+                                  vtoImageUrl={vtoLook?.vtoImageUrl}
                                   compact
                                 />
                               </div>
@@ -1686,6 +1695,7 @@ export function ReadyApp() {
                                   scan={currentScan}
                                   outfit={compareOutfit}
                                   makeup={compareVtoLook.makeup}
+                                  vtoImageUrl={compareVtoLook?.vtoImageUrl}
                                   compact
                                 />
                               </div>
@@ -1706,9 +1716,13 @@ export function ReadyApp() {
                           scan={currentScan}
                           outfit={selectedOutfit}
                           makeup={activeMakeup}
+                          vtoImageUrl={vtoLook?.vtoImageUrl}
+                          isGenerating={isGeneratingVto}
                           badgeText={
                             isGeneratingVto
-                              ? "Rendering VTO..."
+                              ? "Fitting with YouCam Cloth VTO..."
+                              : vtoLook?.vtoImageUrl
+                              ? "YouCam Cloth VTO Active"
                               : `${activeMakeup.baseFinish}`
                           }
                         />

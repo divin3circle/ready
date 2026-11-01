@@ -18,6 +18,8 @@ interface VTOPortraitCanvasProps {
   scan: SkinScanResult
   outfit: OutfitOption
   makeup: MakeupPrescription
+  vtoImageUrl?: string
+  isGenerating?: boolean
   viewMode?: "vto" | "skin-zones"
   badgeText?: string
   compact?: boolean
@@ -27,6 +29,8 @@ export function VTOPortraitCanvas({
   scan,
   outfit,
   makeup,
+  vtoImageUrl,
+  isGenerating = false,
   viewMode = "vto",
   badgeText,
   compact = false,
@@ -108,58 +112,87 @@ export function VTOPortraitCanvas({
           compact ? "h-80" : "h-[460px] sm:h-[540px]"
         }`}
       >
-        {/* If user captured a custom photo, render full uncropped image with AR makeup & garment drape */}
-        {scan.imageDataUrl ? (
+        {/* Loading HUD: Neural Cloth Transfer in Progress */}
+        {isGenerating && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-stone-950/80 backdrop-blur-xs transition-all">
+            <div className="relative flex flex-col items-center gap-3 px-6 text-center">
+              <div className="relative size-16">
+                <div className="absolute inset-0 rounded-full border-2 border-emerald-400/40 animate-ping" />
+                <div className="flex size-16 items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-500/15 backdrop-blur-md">
+                  <IconSparkles className="size-7 text-emerald-300 animate-spin" />
+                </div>
+              </div>
+              <div>
+                <div className="font-heading text-sm font-bold text-white tracking-wide">
+                  YouCam Cloth VTO Engine
+                </div>
+                <div className="font-mono text-xs text-emerald-300/90 mt-0.5">
+                  Fitting {outfit.name}...
+                </div>
+              </div>
+              <div className="w-48 overflow-hidden rounded-full bg-white/10 p-0.5">
+                <div className="h-1 rounded-full bg-emerald-400 animate-pulse w-full" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CASE 1: Photorealistic Live YouCam Cloth VTO Try-On Result */}
+        {overlayMode === "vto" && vtoImageUrl ? (
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={vtoImageUrl}
+              alt={`YouCam VTO - ${outfit.name}`}
+              className="h-full w-full object-contain transition-all duration-500"
+            />
+            {/* Subtle cosmetic finish glow */}
+            <div
+              className="pointer-events-none absolute inset-0 mix-blend-soft-light"
+              style={{
+                background: `radial-gradient(circle at 50% 30%, ${makeup.foundationHex}44, transparent 65%)`,
+              }}
+            />
+            {/* Verified YouCam Cloth VTO Badge */}
+            <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-stone-900/85 px-2.5 py-1 text-[10px] font-medium text-emerald-400 backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>YouCam Neural Cloth VTO Active</span>
+            </div>
+          </div>
+        ) : overlayMode === "skin-zones" && scan.imageDataUrl ? (
+          /* CASE 2: Skin Zones HUD on User Raw Photo */
           <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={scan.imageDataUrl}
               alt="User scan portrait"
-              className="h-full w-full object-contain transition-all duration-500"
-              style={{
-                filter:
-                  overlayMode === "vto"
-                    ? `contrast(${isLuminous ? 1.04 : 1.01}) saturate(1.06) brightness(${
-                        isLuminous ? 1.04 : 1.01
-                      })`
-                    : "contrast(1.08)",
-              }}
+              className="h-full w-full object-contain transition-all duration-500 contrast(1.08)"
             />
             {/* AR Skin Zones HUD Overlay directly on user photo */}
-            {overlayMode === "skin-zones" && (
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                {/* T-Zone Reticle */}
-                <div className="absolute top-[28%] flex items-center gap-1.5 rounded-full border border-emerald-400/70 bg-emerald-500/20 px-2.5 py-0.5 font-mono text-[10px] text-emerald-200 backdrop-blur-xs animate-pulse">
-                  <span>T-Zone Sebum • {oiliness}/100</span>
-                </div>
-                {/* Cheeks Reticle */}
-                <div className="absolute top-[48%] flex w-[68%] justify-between px-2">
-                  <span className="rounded-full border border-pink-400/70 bg-pink-500/20 px-2 py-0.5 font-mono text-[9px] text-pink-200 backdrop-blur-xs">
-                    Cheek • {moisture}/100
-                  </span>
-                  <span className="rounded-full border border-amber-400/70 bg-amber-500/20 px-2 py-0.5 font-mono text-[9px] text-amber-200 backdrop-blur-xs">
-                    Redness • {redness}/100
-                  </span>
-                </div>
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              {/* T-Zone Reticle */}
+              <div className="absolute top-[28%] flex items-center gap-1.5 rounded-full border border-emerald-400/70 bg-emerald-500/20 px-2.5 py-0.5 font-mono text-[10px] text-emerald-200 backdrop-blur-xs animate-pulse">
+                <span>T-Zone Sebum • {oiliness}/100</span>
               </div>
-            )}
-            {/* Subtle cosmetic finish aura */}
-            {overlayMode === "vto" && (
-              <div
-                className="pointer-events-none absolute inset-0 mix-blend-soft-light transition-opacity duration-500"
-                style={{
-                  background: `radial-gradient(circle at 50% 38%, ${makeup.foundationHex}55, transparent 60%), linear-gradient(to top, ${outfit.primaryHex}DD 0%, ${outfit.primaryHex}66 24%, transparent 50%)`,
-                }}
-              />
-            )}
+              {/* Cheeks Reticle */}
+              <div className="absolute top-[48%] flex w-[68%] justify-between px-2">
+                <span className="rounded-full border border-pink-400/70 bg-pink-500/20 px-2 py-0.5 font-mono text-[9px] text-pink-200 backdrop-blur-xs">
+                  Cheek • {moisture}/100
+                </span>
+                <span className="rounded-full border border-amber-400/70 bg-amber-500/20 px-2 py-0.5 font-mono text-[9px] text-amber-200 backdrop-blur-xs">
+                  Redness • {redness}/100
+                </span>
+              </div>
+            </div>
           </div>
         ) : (
-          /* High-Fashion Interactive SVG Editorial Model + AR Skin & Garment Rig */
-          <svg
-            viewBox="0 0 360 420"
-            className="h-full w-full max-w-[360px] select-none"
-            aria-label={`Virtual try-on preview wearing ${outfit.name} with ${makeup.lookName}`}
-          >
+          /* CASE 3: High-Fashion Garment Drape Rig (Dressing the silhouette with Outfit + Skin AI Rx) */
+          <>
+            <svg
+              viewBox="0 0 360 420"
+              className="h-full w-full max-w-[360px] select-none"
+              aria-label={`Virtual try-on preview wearing ${outfit.name} with ${makeup.lookName}`}
+            >
             <defs>
               <radialGradient id={`skinGrad-${scan.scanId}`} cx="50%" cy="40%" r="55%">
                 <stop
@@ -469,6 +502,25 @@ export function VTOPortraitCanvas({
               </g>
             )}
           </svg>
+          {scan.imageDataUrl && overlayMode === "vto" && !vtoImageUrl && (
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-2xl border border-white/15 bg-black/70 p-1.5 shadow-lg backdrop-blur-md">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={scan.imageDataUrl}
+                alt="Uploaded scan selfie"
+                className="size-10 rounded-xl object-cover border border-white/20"
+              />
+              <div className="pr-1.5 text-left">
+                <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+                  Your Skin AI
+                </div>
+                <div className="text-[11px] font-semibold text-white">
+                  {scan.undertone} • {scan.stage}
+                </div>
+              </div>
+            </div>
+          )}
+          </>
         )}
 
         {/* Bottom Floating Look & Shade Swatch Bar */}
