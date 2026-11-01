@@ -65,6 +65,7 @@ import type {
   SkinMetric,
   SkinScanResult,
   VTOLookResult,
+  WardrobeGender,
 } from "@/lib/types"
 import LycorisSpecimen from "@/components/ui/lycoris-specimen"
 import { AnalyticsBento } from "@/components/ui/analytics-bento"
@@ -138,12 +139,14 @@ export function ReadyApp() {
   const [scans, setScans] = React.useState<SkinScanResult[]>([])
   const [isScanning, setIsScanning] = React.useState(false)
 
-  // Outfits & VTO Look State
+  // Wardrobe Gender & Outfits State (Defaults to Menswear so male users get tailored suits, not gowns!)
+  const [selectedGender, setSelectedGender] =
+    React.useState<WardrobeGender>("menswear")
   const [outfits, setOutfits] = React.useState<OutfitOption[]>(CURATED_OUTFITS)
   const [selectedOutfitId, setSelectedOutfitId] =
-    React.useState<string>("emerald-silk-midi")
+    React.useState<string>("mens-bespoke-tuxedo")
   const [compareOutfitId, setCompareOutfitId] = React.useState<string>(
-    "champagne-satin-gown"
+    "mens-terracotta-linen-suit"
   )
   const [vtoLook, setVtoLook] = React.useState<VTOLookResult | null>(null)
   const [compareVtoLook, setCompareVtoLook] =
@@ -166,6 +169,12 @@ export function ReadyApp() {
 
   React.useEffect(() => {
     try {
+      const savedGender = localStorage.getItem("ready_wardrobe_gender") as WardrobeGender | null
+      if (savedGender === "menswear" || savedGender === "womenswear") {
+        setSelectedGender(savedGender)
+        const match = CURATED_OUTFITS.find((o) => o.gender === savedGender)
+        if (match) setSelectedOutfitId(match.id)
+      }
       const savedYce = localStorage.getItem("ready_yce_api_key") || ""
       const savedGem = localStorage.getItem("ready_gemini_api_key") || ""
       const savedPro = localStorage.getItem("ready_is_pro") === "true"
@@ -180,6 +189,23 @@ export function ReadyApp() {
       })
       .catch(() => {})
   }, [])
+
+  const handleSelectGender = (gender: WardrobeGender) => {
+    setSelectedGender(gender)
+    try {
+      localStorage.setItem("ready_wardrobe_gender", gender)
+    } catch {}
+    const firstMatch = outfits.find((o) => o.gender === gender)
+    if (firstMatch) {
+      setSelectedOutfitId(firstMatch.id)
+      const secondMatch = outfits.find(
+        (o) => o.gender === gender && o.id !== firstMatch.id
+      )
+      if (secondMatch) {
+        setCompareOutfitId(secondMatch.id)
+      }
+    }
+  }
 
   const handleTogglePro = (checked: boolean) => {
     setIsPro(checked)
@@ -205,17 +231,28 @@ export function ReadyApp() {
     return scans.find((s) => s.stage === "baseline") || scans[0] || null
   }, [scans])
 
+  const visibleOutfits = React.useMemo(() => {
+    return outfits.filter((o) => !o.gender || o.gender === selectedGender)
+  }, [outfits, selectedGender])
+
   const selectedOutfit = React.useMemo(() => {
     return (
-      outfits.find((o) => o.id === selectedOutfitId) || CURATED_OUTFITS[0]!
+      visibleOutfits.find((o) => o.id === selectedOutfitId) ||
+      visibleOutfits[0] ||
+      CURATED_OUTFITS[0]!
     )
-  }, [outfits, selectedOutfitId])
+  }, [visibleOutfits, selectedOutfitId])
 
   const compareOutfit = React.useMemo(() => {
     return (
-      outfits.find((o) => o.id === compareOutfitId) || CURATED_OUTFITS[1]!
+      visibleOutfits.find(
+        (o) => o.id === compareOutfitId && o.id !== selectedOutfit.id
+      ) ||
+      visibleOutfits[1] ||
+      visibleOutfits[0] ||
+      CURATED_OUTFITS[1]!
     )
-  }, [outfits, compareOutfitId])
+  }, [visibleOutfits, compareOutfitId, selectedOutfit])
 
   const daysRemaining = React.useMemo(() => {
     const target = new Date(eventDate).getTime()
@@ -381,6 +418,7 @@ export function ReadyApp() {
         const customOutfit: OutfitOption = {
           id: `custom-outfit-${Date.now()}`,
           name: `Custom Look (${file.name.replace(/\.[^.]+$/, "").slice(0, 14)})`,
+          gender: selectedGender,
           category: eventType,
           designerTag: "Uploaded Garment",
           fabricAndCut: "Analyzed via YouCam VTO",
@@ -1145,6 +1183,44 @@ export function ReadyApp() {
                 </div>
               </div>
 
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Wardrobe &amp; Silhouette
+                </label>
+                <div className="mt-1.5 grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectGender("menswear")}
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition ${
+                      selectedGender === "menswear"
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                        : "border-border bg-card hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="text-xl">👔</span>
+                    <div>
+                      <div className="font-heading text-xs font-bold">Men&apos;s Wardrobe</div>
+                      <div className="text-[10px] text-muted-foreground">Suits, Tuxedos &amp; Menswear</div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectGender("womenswear")}
+                    className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition ${
+                      selectedGender === "womenswear"
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                        : "border-border bg-card hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="text-xl">👗</span>
+                    <div>
+                      <div className="font-heading text-xs font-bold">Women&apos;s Wardrobe</div>
+                      <div className="text-[10px] text-muted-foreground">Gowns, Dresses &amp; Tailoring</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               <div className="rounded-2xl border border-border bg-muted/30 p-3.5 text-xs text-muted-foreground">
                 Countdown window:{" "}
                 <strong className="font-mono text-foreground">
@@ -1729,31 +1805,59 @@ export function ReadyApp() {
                       </div>
 
                       <div className="space-y-5 lg:col-span-6">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             1. Choose Event Outfit
                           </span>
-                          <input
-                            ref={customOutfitInputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleCustomOutfitUpload}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() =>
-                              customOutfitInputRef.current?.click()
-                            }
-                          >
-                            <IconUpload className="size-3.5" />
-                            Upload Photo
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            {/* Menswear / Womenswear Gender Pill Toggle */}
+                            <div className="flex items-center rounded-full border border-border bg-muted/50 p-0.5 text-xs font-medium">
+                              <button
+                                type="button"
+                                onClick={() => handleSelectGender("menswear")}
+                                className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] transition ${
+                                  selectedGender === "menswear"
+                                    ? "bg-background text-foreground font-bold shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                <span>👔</span> Men&apos;s
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSelectGender("womenswear")}
+                                className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] transition ${
+                                  selectedGender === "womenswear"
+                                    ? "bg-background text-foreground font-bold shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                <span>👗</span> Women&apos;s
+                              </button>
+                            </div>
+
+                            <input
+                              ref={customOutfitInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleCustomOutfitUpload}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() =>
+                                customOutfitInputRef.current?.click()
+                              }
+                            >
+                              <IconUpload className="size-3.5" />
+                              Upload
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                          {outfits.map((o) => {
+                          {visibleOutfits.map((o) => {
                             const active = o.id === selectedOutfitId
                             return (
                               <button
@@ -1785,7 +1889,9 @@ export function ReadyApp() {
 
                         <div className="space-y-2 pt-2">
                           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            2. Makeup Prescription Finish
+                            {selectedGender === "menswear"
+                              ? "2. Grooming & Anti-Shine Prescription"
+                              : "2. Makeup Prescription Finish"}
                           </span>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -1810,7 +1916,9 @@ export function ReadyApp() {
                                 {vtoLook.makeup.baseFinish}
                               </div>
                               <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                Skin-AI Matched Rx
+                                {selectedGender === "menswear"
+                                  ? "Camera-Ready Anti-Shine"
+                                  : "Skin-AI Matched Rx"}
                               </div>
                             </button>
 
@@ -1836,7 +1944,9 @@ export function ReadyApp() {
                                 {vtoLook.alternateMakeup.baseFinish}
                               </div>
                               <div className="text-muted-foreground mt-0.5 text-[11px]">
-                                Statement Lip Alt
+                                {selectedGender === "menswear"
+                                  ? "Minimalist Natural Grooming"
+                                  : "Statement Lip Alt"}
                               </div>
                             </button>
                           </div>

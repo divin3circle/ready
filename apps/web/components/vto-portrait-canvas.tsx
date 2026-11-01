@@ -109,7 +109,7 @@ export function VTOPortraitCanvas({
       {/* Main Studio Portrait & Garment Composite */}
       <div
         className={`relative mx-auto flex w-full flex-col items-center justify-center overflow-hidden bg-stone-950/90 ${
-          compact ? "h-80" : "h-[460px] sm:h-[540px]"
+          compact ? "h-80" : "h-[520px] sm:h-[620px]"
         }`}
       >
         {/* Loading HUD: Neural Cloth Transfer in Progress */}
@@ -189,319 +189,256 @@ export function VTOPortraitCanvas({
           /* CASE 3: High-Fashion Garment Drape Rig (Dressing the silhouette with Outfit + Skin AI Rx) */
           <>
             <svg
-              viewBox="0 0 360 420"
-              className="h-full w-full max-w-[360px] select-none"
+              viewBox="0 0 320 600"
+              className="h-full w-full max-w-[340px] select-none"
               aria-label={`Virtual try-on preview wearing ${outfit.name} with ${makeup.lookName}`}
             >
-            <defs>
-              <radialGradient id={`skinGrad-${scan.scanId}`} cx="50%" cy="40%" r="55%">
-                <stop
-                  offset="0%"
-                  stopColor={ isLuminous ? "#ECCBB1" : scan.skinToneHex || "#D5A787" }
-                />
-                <stop offset="70%" stopColor={scan.skinToneHex || "#D5A787"} />
-                <stop offset="100%" stopColor="#B38364" />
-              </radialGradient>
+              <defs>
+                <radialGradient id={`skinGrad-${scan.scanId}`} cx="50%" cy="40%" r="55%">
+                  <stop
+                    offset="0%"
+                    stopColor={isLuminous ? "#ECCBB1" : scan.skinToneHex || "#D5A787"}
+                  />
+                  <stop offset="70%" stopColor={scan.skinToneHex || "#D5A787"} />
+                  <stop offset="100%" stopColor="#9E6B4A" />
+                </radialGradient>
 
-              <linearGradient id={`dressGrad-${outfit.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor={outfit.primaryHex} />
-                <stop
-                  offset="55%"
-                  stopColor={outfit.primaryHex}
-                  stopOpacity="0.92"
-                />
-                <stop offset="100%" stopColor="#091310" />
-              </linearGradient>
+                <linearGradient id={`dressGrad-${outfit.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={outfit.primaryHex} />
+                  <stop offset="55%" stopColor={outfit.primaryHex} stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#080C14" />
+                </linearGradient>
 
-              <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
-                <stop
-                  offset="0%"
-                  stopColor={
-                    overlayMode === "skin-zones" && redness < 72
-                      ? "#E05353"
-                      : makeup.cheekHex
-                  }
-                  stopOpacity={
-                    overlayMode === "skin-zones" && redness < 72 ? "0.48" : "0.34"
-                  }
-                />
-                <stop offset="100%" stopColor={makeup.cheekHex} stopOpacity="0" />
-              </radialGradient>
+                <linearGradient id={`trouserGrad-${outfit.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={outfit.primaryHex} />
+                  <stop offset="85%" stopColor={outfit.primaryHex} stopOpacity="0.88" />
+                  <stop offset="100%" stopColor="#080A0F" />
+                </linearGradient>
 
-              <radialGradient id="satinHighlight" cx="50%" cy="35%" r="40%">
-                <stop
-                  offset="0%"
-                  stopColor="#FFFFFF"
-                  stopOpacity={isLuminous ? "0.42" : "0.14"}
-                />
-                <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-              </radialGradient>
-            </defs>
+                <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
+                  <stop
+                    offset="0%"
+                    stopColor={overlayMode === "skin-zones" && redness < 72 ? "#E05353" : makeup.cheekHex}
+                    stopOpacity={overlayMode === "skin-zones" && redness < 72 ? "0.48" : "0.34"}
+                  />
+                  <stop offset="100%" stopColor={makeup.cheekHex} stopOpacity="0" />
+                </radialGradient>
 
-            {/* Editorial Studio Arch Backdrop */}
-            <path
-              d="M 60 420 L 60 150 A 120 120 0 0 1 300 150 L 300 420 Z"
-              fill={outfit.primaryHex}
-              fillOpacity="0.16"
-              stroke="rgba(255,255,255,0.08)"
-              strokeWidth="1"
-            />
+                <radialGradient id="satinHighlight" cx="50%" cy="35%" r="40%">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity={isLuminous ? "0.42" : "0.14"} />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+                </radialGradient>
+              </defs>
 
-            {/* Hair Silhouette Back */}
-            <path
-              d="M 102 150 C 92 220, 98 285, 112 315 L 248 315 C 262 285, 268 220, 258 150 C 252 80, 222 52, 180 52 C 138 52, 108 80, 102 150 Z"
-              fill="#1E1612"
-            />
-
-            {/* Neck & Décolletage */}
-            <path
-              d="M 152 225 L 152 288 L 100 315 L 260 315 L 208 288 L 208 225 Z"
-              fill={`url(#skinGrad-${scan.scanId})`}
-            />
-
-            {/* Collarbone subtle highlight */}
-            <path
-              d="M 132 302 Q 160 310 175 304 M 228 302 Q 200 310 185 304"
-              stroke="rgba(255,255,255,0.22)"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-            />
-
-            {/* Apparel VTO Garment Drape */}
-            {outfit.garmentOverlaySvg === "navy-blazer" ? (
-              <g>
-                {/* Inner Silk Camisole */}
-                <path
-                  d="M 145 305 Q 180 332 215 305 L 225 420 L 135 420 Z"
-                  fill={outfit.secondaryHex}
-                />
-                {/* Tailored Blazer Jacket & Sharp Lapels */}
-                <path
-                  d="M 70 420 L 88 302 L 146 286 L 176 365 L 180 420 Z"
-                  fill={`url(#dressGrad-${outfit.id})`}
-                />
-                <path
-                  d="M 290 420 L 272 302 L 214 286 L 184 365 L 180 420 Z"
-                  fill={`url(#dressGrad-${outfit.id})`}
-                />
-                {/* Lapel Fold Lines */}
-                <path
-                  d="M 146 286 L 132 332 L 176 365 M 214 286 L 228 332 L 184 365"
-                  stroke="rgba(255,255,255,0.22)"
-                  strokeWidth="1.5"
-                  fill="none"
-                />
-              </g>
-            ) : (
-              <g>
-                {/* Silk / Satin Cowl & Draped Evening Bodice */}
-                <path
-                  d="M 74 420 C 78 345, 96 306, 128 295 Q 180 335 232 295 C 264 306, 282 345, 286 420 Z"
-                  fill={`url(#dressGrad-${outfit.id})`}
-                />
-                {/* Silk Charmeuse Light Folds */}
-                <path
-                  d="M 128 295 Q 180 348 232 295 M 118 328 Q 180 375 242 328 M 136 365 Q 180 395 224 365"
-                  stroke={outfit.secondaryHex}
-                  strokeOpacity="0.38"
-                  strokeWidth="2"
-                  fill="none"
-                />
-                {/* Delicate Spaghetti / Asymmetric Straps */}
-                <path
-                  d="M 132 296 L 138 272 M 228 296 L 222 272"
-                  stroke={outfit.secondaryHex}
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                />
-              </g>
-            )}
-
-            {/* Face Contour */}
-            <path
-              d="M 122 142 C 122 96, 146 74, 180 74 C 214 74, 238 96, 238 142 C 238 192, 212 242, 180 246 C 148 242, 122 192, 122 142 Z"
-              fill={`url(#skinGrad-${scan.scanId})`}
-            />
-
-            {/* Luminous Satin Cheekbone Glow */}
-            <ellipse
-              cx="145"
-              cy="166"
-              rx="22"
-              ry="14"
-              fill="url(#satinHighlight)"
-            />
-            <ellipse
-              cx="215"
-              cy="166"
-              rx="22"
-              ry="14"
-              fill="url(#satinHighlight)"
-            />
-
-            {/* Makeup VTO Cheek Blush Drape */}
-            <ellipse cx="142" cy="174" rx="22" ry="15" fill="url(#cheekBlush)" />
-            <ellipse cx="218" cy="174" rx="22" ry="15" fill="url(#cheekBlush)" />
-
-            {/* Eyebrows */}
-            <path
-              d="M 136 132 Q 152 124 168 130 M 192 130 Q 208 124 224 132"
-              stroke="#2A1D17"
-              strokeWidth="3.2"
-              strokeLinecap="round"
-              fill="none"
-            />
-
-            {/* Makeup VTO Eyeshadow Wash */}
-            <path
-              d="M 138 145 Q 153 134 167 145 Z M 193 145 Q 207 134 222 145 Z"
-              fill={makeup.eyeHex}
-              fillOpacity={overlayMode === "vto" ? "0.45" : "0.15"}
-            />
-
-            {/* Eyes */}
-            <ellipse cx="153" cy="147" rx="11" ry="5.5" fill="#FFFFFF" />
-            <circle cx="153" cy="147" r="4.8" fill="#3B261D" />
-            <circle cx="154.5" cy="145.5" r="1.5" fill="#FFFFFF" />
-
-            <ellipse cx="207" cy="147" rx="11" ry="5.5" fill="#FFFFFF" />
-            <circle cx="207" cy="147" r="4.8" fill="#3B261D" />
-            <circle cx="208.5" cy="145.5" r="1.5" fill="#FFFFFF" />
-
-            {/* Eyeliner Wing */}
-            <path
-              d="M 140 146 Q 153 139 166 146 M 194 146 Q 207 139 220 146"
-              stroke="#1C130F"
-              strokeWidth="2.2"
-              fill="none"
-              strokeLinecap="round"
-            />
-
-            {/* Nose Bridge & Tip */}
-            <path
-              d="M 180 142 L 178 180 Q 180 185 185 182"
-              stroke="rgba(110,70,45,0.45)"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-            />
-
-            {/* Makeup VTO Lip Color & Finish */}
-            <path
-              d="M 161 204 Q 171 197 180 201 Q 189 197 199 204 Q 189 207 180 207 Q 171 207 161 204 Z"
-              fill={overlayMode === "vto" ? makeup.lipHex : "#C47A74"}
-            />
-            <path
-              d="M 161 204 Q 180 220 199 204 Q 180 207 161 204 Z"
-              fill={overlayMode === "vto" ? makeup.lipHex : "#C47A74"}
-              fillOpacity="0.92"
-            />
-            {/* Satin Lip Highlight */}
-            {overlayMode === "vto" && (
+              {/* Editorial Studio Arch Backdrop */}
               <path
-                d="M 172 209 Q 180 212 188 209"
-                stroke="rgba(255,255,255,0.45)"
-                strokeWidth="1.8"
-                fill="none"
-                strokeLinecap="round"
+                d="M 40 600 L 40 85 A 120 120 0 0 1 280 85 L 280 600 Z"
+                fill={outfit.primaryHex}
+                fillOpacity="0.15"
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth="1"
               />
-            )}
 
-            {/* Hair Front Framing Strands */}
-            <path
-              d="M 122 125 C 128 88, 162 72, 180 72 C 198 72, 232 88, 238 125 C 228 96, 202 84, 180 84 C 158 84, 132 96, 122 125 Z"
-              fill="#1E1612"
-            />
+              {/* -------------------------------------------------------------
+                  MENSWEAR FULL-BODY EDITORIAL SILHOUETTE (Clean Straight Pose)
+                 ------------------------------------------------------------- */}
+              {outfit.gender === "menswear" ? (
+                <g>
+                  {/* Tailored Straight Trousers (y=295..545) */}
+                  <g>
+                    {/* Left Leg */}
+                    <path
+                      d="M 124 298 L 118 545 L 152 545 L 158 350 Z"
+                      fill={`url(#trouserGrad-${outfit.id})`}
+                    />
+                    {/* Right Leg */}
+                    <path
+                      d="M 196 298 L 202 545 L 168 545 L 162 350 Z"
+                      fill={`url(#trouserGrad-${outfit.id})`}
+                    />
+                    {/* Center Trouser Ironed Crease Lines */}
+                    <line x1="135" y1="310" x2="135" y2="542" stroke="rgba(255,255,255,0.14)" strokeWidth="1.2" />
+                    <line x1="185" y1="310" x2="185" y2="542" stroke="rgba(255,255,255,0.14)" strokeWidth="1.2" />
+                    {/* Tuxedo Satin Side Stripe */}
+                    {outfit.id === "mens-bespoke-tuxedo" && (
+                      <>
+                        <line x1="124" y1="298" x2="118" y2="545" stroke="#090A0D" strokeWidth="2.5" />
+                        <line x1="196" y1="298" x2="202" y2="545" stroke="#090A0D" strokeWidth="2.5" />
+                      </>
+                    )}
+                  </g>
 
-            {/* AR Skin Diagnostic Zone Overlays when in "skin-zones" mode */}
-            {overlayMode === "skin-zones" && (
-              <g>
-                {/* T-Zone Sebum Mesh */}
-                <path
-                  d="M 152 102 L 208 102 L 196 126 L 185 180 L 175 180 L 164 126 Z"
-                  fill="rgba(245, 158, 11, 0.18)"
-                  stroke="#F59E0B"
-                  strokeWidth="1.2"
-                  strokeDasharray="3 3"
-                />
-                {/* Cheek Moisture / Redness Zones */}
-                <circle
-                  cx="145"
-                  cy="174"
-                  r="18"
-                  fill="rgba(56, 189, 248, 0.16)"
-                  stroke="#38BDF8"
-                  strokeWidth="1.2"
-                  strokeDasharray="3 3"
-                />
-                <circle
-                  cx="215"
-                  cy="174"
-                  r="18"
-                  fill="rgba(244, 63, 94, 0.16)"
-                  stroke="#FB7185"
-                  strokeWidth="1.2"
-                  strokeDasharray="3 3"
-                />
-                {/* Callout Pills */}
-                <g transform="translate(18, 96)">
-                  <rect
-                    width="106"
-                    height="24"
-                    rx="12"
-                    fill="rgba(15,15,15,0.82)"
-                    stroke="rgba(245,158,11,0.5)"
+                  {/* Polished Dress Shoes / Loafers (y=545..572) */}
+                  <g>
+                    {/* Left Shoe */}
+                    <path d="M 112 545 L 112 568 Q 134 574 154 568 L 154 545 Z" fill="#0A0A0D" />
+                    {/* Right Shoe */}
+                    <path d="M 166 545 L 166 568 Q 186 574 208 568 L 208 545 Z" fill="#0A0A0D" />
+                    {/* Leather Sole Highlights */}
+                    <path d="M 110 568 Q 134 575 156 568 M 164 568 Q 186 575 210 568" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" fill="none" />
+                  </g>
+
+                  {/* Crisp Poplin Shirt Bib & Neckwear (y=136..298) */}
+                  <path d="M 148 136 L 172 136 L 166 295 L 154 295 Z" fill="#F8F9FA" />
+                  {/* Collar Points */}
+                  <path d="M 146 136 L 154 150 L 160 144 L 166 150 L 174 136 Z" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="0.8" />
+
+                  {/* Neckwear based on suit style */}
+                  {outfit.garmentOverlaySvg === "mens-tuxedo" || outfit.garmentOverlaySvg === "mens-velvet-dinner" ? (
+                    <>
+                      {/* Black Satin Bow-Tie */}
+                      <path d="M 152 144 L 160 147 L 168 144 L 168 152 L 160 149 L 152 152 Z" fill="#090A0D" />
+                      {/* Black Satin Cummerbund / Waistcoat */}
+                      <path d="M 146 280 L 174 280 L 172 298 L 148 298 Z" fill="#090A0D" />
+                    </>
+                  ) : outfit.garmentOverlaySvg === "mens-suit-terracotta" ? (
+                    /* Open knit polo collar */
+                    <path d="M 148 136 L 160 156 L 172 136 Z" fill="#F0E5D8" />
+                  ) : (
+                    /* Executive Silk Tie */
+                    <path d="M 157 146 L 163 146 L 164 260 L 160 270 L 156 260 Z" fill={outfit.accentHex} />
+                  )}
+
+                  {/* Tailored Suit Jacket (y=140..325) */}
+                  <g>
+                    {/* Left Jacket Body */}
+                    <path d="M 82 148 L 148 140 L 162 275 L 100 322 L 82 148 Z" fill={`url(#dressGrad-${outfit.id})`} />
+                    {/* Right Jacket Body */}
+                    <path d="M 238 148 L 172 140 L 158 275 L 220 322 L 238 148 Z" fill={`url(#dressGrad-${outfit.id})`} />
+
+                    {/* Lapels with Contrast Satin / Texture */}
+                    <path
+                      d="M 148 140 L 124 195 L 160 275 L 153 275 L 136 182 L 148 140 Z"
+                      fill={outfit.secondaryHex}
+                      fillOpacity={outfit.id === "mens-bespoke-tuxedo" || outfit.id === "mens-emerald-velvet-dinner" ? 0.95 : 0.35}
+                    />
+                    <path
+                      d="M 172 140 L 196 195 L 160 275 L 167 275 L 184 182 L 172 140 Z"
+                      fill={outfit.secondaryHex}
+                      fillOpacity={outfit.id === "mens-bespoke-tuxedo" || outfit.id === "mens-emerald-velvet-dinner" ? 0.95 : 0.35}
+                    />
+
+                    {/* Pocket Square in Breast Pocket */}
+                    <rect x="108" y="192" width="16" height="2" fill="rgba(255,255,255,0.4)" />
+                    <polygon points="112,192 116,183 120,192" fill="#F8F9FA" />
+
+                    {/* Waist Button */}
+                    <circle cx="160" cy="278" r="2.5" fill="#0A0A0D" stroke="#D1D5DB" strokeWidth="0.8" />
+                  </g>
+
+                  {/* Arms & Hands in Natural Straight Relaxed Pose (y=148..342) */}
+                  <g>
+                    {/* Left Sleeve */}
+                    <path d="M 82 148 L 100 156 L 94 318 L 76 318 Z" fill={`url(#dressGrad-${outfit.id})`} />
+                    {/* Right Sleeve */}
+                    <path d="M 238 148 L 220 156 L 226 318 L 244 318 Z" fill={`url(#dressGrad-${outfit.id})`} />
+
+                    {/* Shirt Cuffs */}
+                    <rect x="76" y="318" width="18" height="4" fill="#F8F9FA" rx="1" />
+                    <rect x="226" y="318" width="18" height="4" fill="#F8F9FA" rx="1" />
+
+                    {/* Hands with Calibrated Skin AI Tone */}
+                    <path d="M 77 322 L 93 322 Q 95 342 85 342 Q 75 342 77 322 Z" fill={`url(#skinGrad-${scan.scanId})`} />
+                    <path d="M 227 322 L 243 322 Q 245 342 235 342 Q 225 342 227 322 Z" fill={`url(#skinGrad-${scan.scanId})`} />
+                  </g>
+
+                  {/* Neck */}
+                  <path d="M 149 106 L 149 138 L 171 138 L 171 106 Z" fill={`url(#skinGrad-${scan.scanId})`} />
+
+                  {/* Head & Masculine Haircut */}
+                  <path
+                    d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
+                    fill={`url(#skinGrad-${scan.scanId})`}
                   />
-                  <text
-                    x="10"
-                    y="15"
-                    fill="#FDE68A"
-                    fontSize="9.5"
-                    fontFamily="monospace"
-                  >
-                    Sebum: {oiliness}/100
-                  </text>
-                </g>
-                <g transform="translate(14, 165)">
-                  <rect
-                    width="108"
-                    height="24"
-                    rx="12"
-                    fill="rgba(15,15,15,0.82)"
-                    stroke="rgba(56,189,248,0.5)"
+                  {/* Clean masculine hairline & fade */}
+                  <path
+                    d="M 134 72 C 132 42, 144 32, 160 32 C 176 32, 188 42, 186 72 C 186 78, 184 82, 182 86 L 180 86 L 180 64 Q 160 54 140 64 L 140 86 L 138 86 Z"
+                    fill="#151210"
                   />
-                  <text
-                    x="10"
-                    y="15"
-                    fill="#BAE6FD"
-                    fontSize="9.5"
-                    fontFamily="monospace"
-                  >
-                    Hydration: {moisture}/100
-                  </text>
+
+                  {/* Groomed Facial Features (Straight Forward Expression) */}
+                  <path d="M 142 66 Q 152 63 158 66 M 162 66 Q 168 63 178 66" stroke="#221814" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                  <ellipse cx="150" cy="74" rx="4.5" ry="2.5" fill="#2B1A13" />
+                  <ellipse cx="170" cy="74" rx="4.5" ry="2.5" fill="#2B1A13" />
+                  <path d="M 160 72 L 159 86 Q 160 88 163 87" stroke="rgba(110,70,45,0.45)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+                  <path d="M 152 98 Q 160 101 168 98" stroke={makeup.lipHex || "#A8705C"} strokeWidth="2.2" strokeLinecap="round" fill="none" />
+
+                  {/* Zone reticles if in skin-zones mode */}
+                  {overlayMode === "skin-zones" && (
+                    <g>
+                      <rect x="148" y="58" width="24" height="28" fill="rgba(245, 158, 11, 0.22)" stroke="#F59E0B" strokeWidth="1" strokeDasharray="2 2" />
+                      <circle cx="145" cy="80" r="10" fill="rgba(56, 189, 248, 0.2)" stroke="#38BDF8" strokeWidth="1" strokeDasharray="2 2" />
+                      <circle cx="175" cy="80" r="10" fill="rgba(244, 63, 94, 0.2)" stroke="#FB7185" strokeWidth="1" strokeDasharray="2 2" />
+                    </g>
+                  )}
                 </g>
-                <g transform="translate(234, 165)">
-                  <rect
-                    width="112"
-                    height="24"
-                    rx="12"
-                    fill="rgba(15,15,15,0.82)"
-                    stroke="rgba(251,113,133,0.5)"
+              ) : (
+                /* ---------------------------------------------------------------
+                   WOMENSWEAR FULL-BODY EDITORIAL SILHOUETTE (Clean Straight Pose)
+                   --------------------------------------------------------------- */
+                <g>
+                  {/* Full-Length Draped Evening Gown / Midi Skirt (y=265..545) */}
+                  <g>
+                    <path
+                      d="M 132 265 Q 160 272 188 265 L 210 545 Q 160 555 110 545 Z"
+                      fill={`url(#dressGrad-${outfit.id})`}
+                    />
+                    {/* Fluid Silk Charmeuse Drape Lines */}
+                    <path
+                      d="M 142 270 Q 146 410 138 545 M 178 270 Q 174 410 182 545"
+                      stroke={outfit.secondaryHex}
+                      strokeOpacity="0.35"
+                      strokeWidth="1.5"
+                      fill="none"
+                    />
+                  </g>
+
+                  {/* Evening Shoes / Heels (y=545..568) */}
+                  <g>
+                    <path d="M 132 545 L 132 566 Q 142 570 152 566 L 152 545 Z" fill="#0C0A0D" />
+                    <path d="M 168 545 L 168 566 Q 178 570 188 566 L 188 545 Z" fill="#0C0A0D" />
+                  </g>
+
+                  {/* Bodice / Top Drape (y=140..268) */}
+                  <g>
+                    {/* Décolletage */}
+                    <path d="M 148 110 L 148 142 L 172 142 L 172 110 Z" fill={`url(#skinGrad-${scan.scanId})`} />
+                    <path
+                      d="M 105 152 C 110 200, 128 265, 132 268 Q 160 274 188 268 C 192 265, 210 200, 215 152 Z"
+                      fill={`url(#dressGrad-${outfit.id})`}
+                    />
+                    {/* Cowl Neck / Satin Drape Fold */}
+                    <path d="M 125 152 Q 160 178 195 152" stroke={outfit.secondaryHex} strokeWidth="2.5" fill="none" />
+                  </g>
+
+                  {/* Arms & Hands Straight Relaxed Pose (y=152..342) */}
+                  <g>
+                    <path d="M 105 152 Q 95 240 92 322" stroke={`url(#skinGrad-${scan.scanId})`} strokeWidth="12" strokeLinecap="round" fill="none" />
+                    <path d="M 215 152 Q 225 240 228 322" stroke={`url(#skinGrad-${scan.scanId})`} strokeWidth="12" strokeLinecap="round" fill="none" />
+                    <circle cx="92" cy="330" r="5" fill={`url(#skinGrad-${scan.scanId})`} />
+                    <circle cx="228" cy="330" r="5" fill={`url(#skinGrad-${scan.scanId})`} />
+                  </g>
+
+                  {/* Head & Elegant Swept Hair */}
+                  <path
+                    d="M 136 70 C 136 46, 146 42, 160 42 C 174 42, 184 46, 184 70 C 184 92, 175 110, 160 114 C 145 110, 136 92, 136 70 Z"
+                    fill={`url(#skinGrad-${scan.scanId})`}
                   />
-                  <text
-                    x="10"
-                    y="15"
-                    fill="#FECDD3"
-                    fontSize="9.5"
-                    fontFamily="monospace"
-                  >
-                    Redness: {redness}/100
-                  </text>
+                  <path
+                    d="M 132 78 C 128 44, 142 34, 160 34 C 178 34, 192 44, 188 78 C 190 100, 184 112, 160 112 C 136 112, 130 100, 132 78 Z"
+                    fill="#1C1512"
+                  />
+
+                  {/* Feminine Facial Features */}
+                  <ellipse cx="145" cy="78" rx="8" ry="5" fill="url(#cheekBlush)" />
+                  <ellipse cx="175" cy="78" rx="8" ry="5" fill="url(#cheekBlush)" />
+                  <path d="M 144 68 Q 152 64 158 68 M 162 68 Q 168 64 176 68" stroke="#251A15" strokeWidth="2" strokeLinecap="round" fill="none" />
+                  <ellipse cx="150" cy="74" rx="4" ry="2.2" fill="#251A15" />
+                  <ellipse cx="170" cy="74" rx="4" ry="2.2" fill="#251A15" />
+                  <path d="M 152 98 Q 160 104 168 98 Q 160 101 152 98 Z" fill={makeup.lipHex} />
                 </g>
-              </g>
-            )}
-          </svg>
+              )}
+            </svg>
           {scan.imageDataUrl && overlayMode === "vto" && !vtoImageUrl && (
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-2xl border border-white/15 bg-black/70 p-1.5 shadow-lg backdrop-blur-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}

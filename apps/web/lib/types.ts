@@ -46,9 +46,12 @@ export interface SkinScanResult {
   cacheHit: boolean
 }
 
+export type WardrobeGender = "menswear" | "womenswear"
+
 export interface OutfitOption {
   id: string
   name: string
+  gender: WardrobeGender
   category: EventType | "all"
   designerTag: string
   fabricAndCut: string
@@ -58,7 +61,16 @@ export interface OutfitOption {
   accentHex: string
   recommendedUndertones: Undertone[]
   imageUrl: string
-  garmentOverlaySvg: "emerald-midi" | "champagne-gown" | "navy-blazer" | "terracotta-suit" | "custom"
+  garmentOverlaySvg:
+    | "mens-tuxedo"
+    | "mens-suit-terracotta"
+    | "mens-blazer-navy"
+    | "mens-velvet-dinner"
+    | "emerald-midi"
+    | "champagne-gown"
+    | "navy-blazer"
+    | "terracotta-suit"
+    | "custom"
   styleNotes: string
 }
 

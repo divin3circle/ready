@@ -13,9 +13,85 @@ import type {
 } from "./types"
 
 export const CURATED_OUTFITS: OutfitOption[] = [
+  // --- MENSWEAR COLLECTION ---
+  {
+    id: "mens-bespoke-tuxedo",
+    name: "Midnight Blue Bespoke Tuxedo",
+    gender: "menswear",
+    category: "wedding",
+    designerTag: "Savile Row Atelier • Black Tie",
+    fabricAndCut: "Italian Super 150s midnight wool, grosgrain satin shawl lapel, crisp pleated bib shirt, tailored trousers",
+    primaryColor: "Midnight Admiral Navy",
+    primaryHex: "#0D1B2A",
+    secondaryHex: "#E0E1DD",
+    accentHex: "#415A77",
+    recommendedUndertones: ["cool", "neutral", "warm"],
+    imageUrl:
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=85",
+    garmentOverlaySvg: "mens-tuxedo",
+    styleNotes:
+      "High-contrast midnight navy against a white poplin collar sculpts facial bone structure; pairs with matte anti-shine prep to eliminate forehead camera flash glare.",
+  },
+  {
+    id: "mens-terracotta-linen-suit",
+    name: "Terracotta Italian Linen-Silk Suit",
+    gender: "menswear",
+    category: "graduation",
+    designerTag: "Sartoria Milano • Summer Formal",
+    fabricAndCut: "Unstructured Neapolitan shoulder, breathable Belgian linen-silk weave, cream knit polo, tapered trousers",
+    primaryColor: "Sunbaked Terracotta",
+    primaryHex: "#B85D43",
+    secondaryHex: "#F2ECE4",
+    accentHex: "#8B3E2F",
+    recommendedUndertones: ["warm", "olive", "neutral"],
+    imageUrl:
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=85",
+    garmentOverlaySvg: "mens-suit-terracotta",
+    styleNotes:
+      "Warm terracotta complements rich melanin and golden undertones under natural daylight; requires gentle redness buffering around cheeks and nose.",
+  },
+  {
+    id: "mens-navy-double-breasted",
+    name: "Savile Row Double-Breasted Navy Suit",
+    gender: "menswear",
+    category: "interview",
+    designerTag: "Mayfair Tailors • Executive Suite",
+    fabricAndCut: "6-button structured hopsack wool, peak lapel, horn buttons, crisp white shirt, tapered trousers",
+    primaryColor: "Deep Admiral Navy",
+    primaryHex: "#16253B",
+    secondaryHex: "#EBF2FA",
+    accentHex: "#9B2226",
+    recommendedUndertones: ["cool", "neutral", "warm"],
+    imageUrl:
+      "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?auto=format&fit=crop&w=900&q=85",
+    garmentOverlaySvg: "mens-blazer-navy",
+    styleNotes:
+      "Sharp navy creates a clean perimeter around the neck; priorities are periorbital brightening, hydration to prevent razor-burn flaking, and zero-shine matte finish.",
+  },
+  {
+    id: "mens-emerald-velvet-dinner",
+    name: "Imperial Emerald Velvet Dinner Jacket",
+    gender: "menswear",
+    category: "gala",
+    designerTag: "Atelier Royale • Evening Velvet",
+    fabricAndCut: "Plush silk-velvet smoking jacket, black satin peak lapel, tailored black trousers, oxford shoes",
+    primaryColor: "Deep Botanical Emerald",
+    primaryHex: "#103B2B",
+    secondaryHex: "#D4AF37",
+    accentHex: "#1B1B1B",
+    recommendedUndertones: ["warm", "neutral", "olive"],
+    imageUrl:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=85",
+    garmentOverlaySvg: "mens-velvet-dinner",
+    styleNotes:
+      "High-luster velvet reflects deep green tones onto the jawline; pairs best with well-hydrated skin, an invisible beard-oil barrier, and peptide eye de-puffing.",
+  },
+
+  // --- WOMENSWEAR COLLECTION ---
   {
     id: "emerald-silk-midi",
     name: "Emerald Bias-Cut Silk Midi",
+    gender: "womenswear",
     category: "wedding",
     designerTag: "Atelier Verbena • Evening Edit",
     fabricAndCut: "100% Mulberry charmeuse silk, cowl neckline, high sheen",
@@ -33,6 +109,7 @@ export const CURATED_OUTFITS: OutfitOption[] = [
   {
     id: "champagne-satin-gown",
     name: "Champagne Draped Column Gown",
+    gender: "womenswear",
     category: "gala",
     designerTag: "Maison Solène • Black Tie",
     fabricAndCut: "Liquid pearl duchesse satin, structured boat neck",
@@ -50,6 +127,7 @@ export const CURATED_OUTFITS: OutfitOption[] = [
   {
     id: "navy-tailored-blazer",
     name: "Architectural Navy Wool Blazer Set",
+    gender: "womenswear",
     category: "interview",
     designerTag: "Studio Kvadrat • Camera-Ready",
     fabricAndCut: "Super 130s matte virgin wool, sharp lapel, ivory silk cami",
@@ -67,6 +145,7 @@ export const CURATED_OUTFITS: OutfitOption[] = [
   {
     id: "terracotta-linen-suit",
     name: "Terracotta Silk-Linen Two-Piece",
+    gender: "womenswear",
     category: "graduation",
     designerTag: "Casa Ora • Daylight Editorial",
     fabricAndCut: "Woven raw silk & Belgian linen, tailored waist",
@@ -344,89 +423,147 @@ export function buildLookForSkinAndOutfit(
   const oilinessScore = scan.metrics.find((m) => m.key === "oiliness")?.score ?? 70
   const rednessScore = scan.metrics.find((m) => m.key === "redness")?.score ?? 70
 
-  // Dynamic skin-driven base finish selection!
-  // When oiliness is low-score (<68) or moisture is low, we prescribe Soft-Matte Velvet with hydrating grip.
-  // Once check-in improves moisture/oiliness (>=75), it unlocks Luminous Satin!
   const isBalancedAndHydrated = moistureScore >= 75 && oilinessScore >= 72
   const needsRednessCorrection = rednessScore < 75
+  const isMenswear = outfit.gender === "menswear"
 
-  const primaryMakeup: MakeupPrescription = {
-    id: `makeup-${outfit.id}-primary-${scan.stage}`,
-    lookName: isBalancedAndHydrated
-      ? `Golden-Hour Luminous Satin (${outfit.primaryColor.split(" ").pop()} Edit)`
-      : `Velvet Grip Soft-Matte (${outfit.primaryColor.split(" ").pop()} Edit)`,
-    vibeTag: isBalancedAndHydrated
-      ? "Unlocked by Week 4 Hydration Gain"
-      : "Calibrated for Day 1 Oil & Redness Control",
-    baseFinish: isBalancedAndHydrated ? "Luminous Satin" : "Soft-Matte Velvet",
-    foundationShade:
-      scan.undertone === "warm"
-        ? "Shade 240W • Warm Honey Neutral"
-        : scan.undertone === "cool"
-          ? "Shade 210C • Cool Porcelain Rose"
-          : "Shade 230N • Balanced Ivory Sand",
-    foundationHex: scan.skinToneHex || "#D5A787",
-    primerStrategy: needsRednessCorrection
-      ? "Zone-Mapped Primer: Sheer mint-cica neutralizing base on mid-cheeks + pore-blurring silk on T-zone"
-      : "Zone-Mapped Primer: Illuminating peptide gripping serum across cheekbones + micro-velvet on nasal bridge",
-    lipShadeName:
-      outfit.id === "emerald-silk-midi"
-        ? "Spiced Rosewood Satin (#A64B52)"
-        : outfit.id === "champagne-satin-gown"
-          ? "Crushed Berry Velvet (#8C3444)"
-          : outfit.id === "navy-tailored-blazer"
-            ? "Warm Terracotta Rose (#B55852)"
-            : "Toasted Cinnamon Silk (#A84B3B)",
-    lipHex:
-      outfit.id === "emerald-silk-midi"
-        ? "#A64B52"
-        : outfit.id === "champagne-satin-gown"
-          ? "#8C3444"
-          : outfit.id === "navy-tailored-blazer"
-            ? "#B55852"
-            : "#A84B3B",
-    lipFinish: "Hydrating Cushioned Satin",
-    cheekShadeName:
-      scan.undertone === "warm" ? "Warm Apricot Fig (#C96E5B)" : "Soft Dusty Rose (#C46D7E)",
-    cheekHex: scan.undertone === "warm" ? "#C96E5B" : "#C46D7E",
-    eyeShadowName:
-      outfit.id === "emerald-silk-midi"
-        ? "Antique Champagne & Espresso Tightline"
-        : "Burnished Bronze & Soft Taupe Wash",
-    eyeHex: "#8C6D58",
-    whyItWorksWithSkin: [
-      isBalancedAndHydrated
-        ? `Your Hydration (${moistureScore}/100) & Sebum Balance (${oilinessScore}/100) are now in the optimal zone—allowing a Luminous Satin finish that won't separate.`
-        : `Because YouCam Skin AI scored T-Zone Sebum at ${oilinessScore}/100 and Hydration at ${moistureScore}/100, a Soft-Matte Velvet base controls flash bounce while ceramide prep prevents clinging.`,
-      needsRednessCorrection
-        ? `Cheek Redness (${rednessScore}/100) is buffered with a sheer green-cica color corrector before foundation so ${outfit.primaryColor} doesn't accentuate flushing.`
-        : `Calm Cheek Redness (${rednessScore}/100) means you only need sheer skin-tint coverage, letting natural skin texture shine through.`,
-      `Matched to your ${scan.undertone.toUpperCase()} undertone (${scan.skinTone}) with a peach-neutral under-eye corrector for tear-trough brightness.`,
-    ],
-    whyItWorksWithOutfit: outfit.styleNotes,
-  }
+  const primaryMakeup: MakeupPrescription = isMenswear
+    ? {
+        id: `grooming-${outfit.id}-primary-${scan.stage}`,
+        lookName: isBalancedAndHydrated
+          ? `HD Matte Grooming & Anti-Shine (${outfit.primaryColor.split(" ").pop()} Edit)`
+          : `Oil-Control Matte Grooming (${outfit.primaryColor.split(" ").pop()} Edit)`,
+        vibeTag: isBalancedAndHydrated
+          ? "Unlocked by Balanced Moisture & Sebum"
+          : "Calibrated for Camera Flash & T-Zone Oil Control",
+        baseFinish: isBalancedAndHydrated ? "High-Definition Natural" : "Soft-Matte Velvet",
+        foundationShade:
+          scan.undertone === "warm"
+            ? "Invisible Tint 240W • Warm Honey Natural"
+            : scan.undertone === "cool"
+              ? "Invisible Tint 210C • Cool Neutral"
+              : "Invisible Tint 230N • Balanced Tone",
+        foundationHex: scan.skinToneHex || "#D5A787",
+        primerStrategy: needsRednessCorrection
+          ? "Zone-Mapped Grooming: Anti-redness green-cica soothing balm on cheeks/shave area + silica anti-shine on forehead & nose"
+          : "Zone-Mapped Grooming: Mattifying pore-blurring serum on T-zone + squalane barrier hydration along jawline",
+        lipShadeName: "Conditioning Matte Lip Barrier Balm (0% Shine)",
+        lipHex: "#C28F79",
+        lipFinish: "Non-Glossy Cushioned Barrier",
+        cheekShadeName: "Tone-Calibrated Neutral Buffer (#B07A65)",
+        cheekHex: "#B07A65",
+        eyeShadowName: "Cryo Caffeine De-Puffing & Eye Fatigue Eraser",
+        eyeHex: "#7A6354",
+        whyItWorksWithSkin: [
+          isBalancedAndHydrated
+            ? `Your Hydration (${moistureScore}/100) and Sebum Balance (${oilinessScore}/100) are in the optimal zone—a sheer anti-shine micro-finish prevents flash glare without heavy makeup.`
+            : `T-Zone Sebum score (${oilinessScore}/100) requires a targeted silica mattifying prep to prevent hot-spot shine under event lights next to ${outfit.name}.`,
+          needsRednessCorrection
+            ? `Cheek Redness (${rednessScore}/100) from shaving or sun exposure is calmed with a lightweight green-cica emulsion.`
+            : `Balanced cheek tone (${rednessScore}/100) allows completely natural skin presentation with zero visible makeup feel.`,
+          `Calibrated to your ${scan.undertone.toUpperCase()} undertone with caffeine under-eye peptide recovery for a rested, camera-ready finish.`,
+        ],
+        whyItWorksWithOutfit: outfit.styleNotes,
+      }
+    : {
+        id: `makeup-${outfit.id}-primary-${scan.stage}`,
+        lookName: isBalancedAndHydrated
+          ? `Golden-Hour Luminous Satin (${outfit.primaryColor.split(" ").pop()} Edit)`
+          : `Velvet Grip Soft-Matte (${outfit.primaryColor.split(" ").pop()} Edit)`,
+        vibeTag: isBalancedAndHydrated
+          ? "Unlocked by Week 4 Hydration Gain"
+          : "Calibrated for Day 1 Oil & Redness Control",
+        baseFinish: isBalancedAndHydrated ? "Luminous Satin" : "Soft-Matte Velvet",
+        foundationShade:
+          scan.undertone === "warm"
+            ? "Shade 240W • Warm Honey Neutral"
+            : scan.undertone === "cool"
+              ? "Shade 210C • Cool Porcelain Rose"
+              : "Shade 230N • Balanced Ivory Sand",
+        foundationHex: scan.skinToneHex || "#D5A787",
+        primerStrategy: needsRednessCorrection
+          ? "Zone-Mapped Primer: Sheer mint-cica neutralizing base on mid-cheeks + pore-blurring silk on T-zone"
+          : "Zone-Mapped Primer: Illuminating peptide gripping serum across cheekbones + micro-velvet on nasal bridge",
+        lipShadeName:
+          outfit.id === "emerald-silk-midi"
+            ? "Spiced Rosewood Satin (#A64B52)"
+            : outfit.id === "champagne-satin-gown"
+              ? "Crushed Berry Velvet (#8C3444)"
+              : outfit.id === "navy-tailored-blazer"
+                ? "Warm Terracotta Rose (#B55852)"
+                : "Toasted Cinnamon Silk (#A84B3B)",
+        lipHex:
+          outfit.id === "emerald-silk-midi"
+            ? "#A64B52"
+            : outfit.id === "champagne-satin-gown"
+              ? "#8C3444"
+              : outfit.id === "navy-tailored-blazer"
+                ? "#B55852"
+                : "#A84B3B",
+        lipFinish: "Hydrating Cushioned Satin",
+        cheekShadeName:
+          scan.undertone === "warm" ? "Warm Apricot Fig (#C96E5B)" : "Soft Dusty Rose (#C46D7E)",
+        cheekHex: scan.undertone === "warm" ? "#C96E5B" : "#C46D7E",
+        eyeShadowName:
+          outfit.id === "emerald-silk-midi"
+            ? "Antique Champagne & Espresso Tightline"
+            : "Burnished Bronze & Soft Taupe Wash",
+        eyeHex: "#8C6D58",
+        whyItWorksWithSkin: [
+          isBalancedAndHydrated
+            ? `Your Hydration (${moistureScore}/100) & Sebum Balance (${oilinessScore}/100) are now in the optimal zone—allowing a Luminous Satin finish that won't separate.`
+            : `Because YouCam Skin AI scored T-Zone Sebum at ${oilinessScore}/100 and Hydration at ${moistureScore}/100, a Soft-Matte Velvet base controls flash bounce while ceramide prep prevents clinging.`,
+          needsRednessCorrection
+            ? `Cheek Redness (${rednessScore}/100) is buffered with a sheer green-cica color corrector before foundation so ${outfit.primaryColor} doesn't accentuate flushing.`
+            : `Calm Cheek Redness (${rednessScore}/100) means you only need sheer skin-tint coverage, letting natural skin texture shine through.`,
+          `Matched to your ${scan.undertone.toUpperCase()} undertone (${scan.skinTone}) with a peach-neutral under-eye corrector for tear-trough brightness.`,
+        ],
+        whyItWorksWithOutfit: outfit.styleNotes,
+      }
 
-  const alternateMakeup: MakeupPrescription = {
-    id: `makeup-${outfit.id}-alt-${scan.stage}`,
-    lookName: `Editorial Statement Lip & Glass Skin`,
-    vibeTag: "High-Contrast Evening Alternative",
-    baseFinish: "Sheer Dewy Skin-Tint",
-    foundationShade: primaryMakeup.foundationShade,
-    foundationHex: primaryMakeup.foundationHex,
-    primerStrategy: "Full-face hydro-grip essence + targeted T-zone blotting powder",
-    lipShadeName: "Deep Venetian Garnet (#7C2533)",
-    lipHex: "#7C2533",
-    lipFinish: "Blurred Velvet Matte",
-    cheekShadeName: "Sculpted Sunlit Bronzer (#B67659)",
-    cheekHex: "#B67659",
-    eyeShadowName: "Clean Glossy Lid & Feathered Lash",
-    eyeHex: "#A3826C",
-    whyItWorksWithSkin: [
-      `Uses high-contrast lip color to draw focus away from minor texture while keeping skin coverage ultra-light.`,
-      `Requires blotting paper touch-ups every 2.5 hours if T-zone sebum score is below 70.`,
-    ],
-    whyItWorksWithOutfit: `Creates a dramatic editorial contrast against ${outfit.name}, ideal for evening reception lighting.`,
-  }
+  const alternateMakeup: MakeupPrescription = isMenswear
+    ? {
+        id: `grooming-${outfit.id}-alt-${scan.stage}`,
+        lookName: `Hydrated Clean Skin & Sharp Contours`,
+        vibeTag: "Minimalist Natural Grooming",
+        baseFinish: "High-Definition Natural",
+        foundationShade: primaryMakeup.foundationShade,
+        foundationHex: primaryMakeup.foundationHex,
+        primerStrategy: "Lightweight squalane hydration essence + targeted brow & beard line definition",
+        lipShadeName: "Hydrating Mint Peptides Lip Barrier (Matte)",
+        lipHex: "#C28F79",
+        lipFinish: "Invisible Non-Sticky Shield",
+        cheekShadeName: "Subtle Sculpt & Bronze Contour (#A67C5D)",
+        cheekHex: "#A67C5D",
+        eyeShadowName: "Cryo Brightening Under-Eye Serum",
+        eyeHex: "#7A6354",
+        whyItWorksWithSkin: [
+          `Focuses on deep barrier hydration so skin looks naturally fresh and healthy under outdoor daylight.`,
+          `Prevents dry patches or razor burn from becoming visible under camera lenses.`,
+        ],
+        whyItWorksWithOutfit: `Complements the clean tailoring of ${outfit.name} with effortless, zero-makeup polish.`,
+      }
+    : {
+        id: `makeup-${outfit.id}-alt-${scan.stage}`,
+        lookName: `Editorial Statement Lip & Glass Skin`,
+        vibeTag: "High-Contrast Evening Alternative",
+        baseFinish: "Sheer Dewy Skin-Tint",
+        foundationShade: primaryMakeup.foundationShade,
+        foundationHex: primaryMakeup.foundationHex,
+        primerStrategy: "Full-face hydro-grip essence + targeted T-zone blotting powder",
+        lipShadeName: "Deep Venetian Garnet (#7C2533)",
+        lipHex: "#7C2533",
+        lipFinish: "Blurred Velvet Matte",
+        cheekShadeName: "Sculpted Sunlit Bronzer (#B67659)",
+        cheekHex: "#B67659",
+        eyeShadowName: "Clean Glossy Lid & Feathered Lash",
+        eyeHex: "#A3826C",
+        whyItWorksWithSkin: [
+          `Uses high-contrast lip color to draw focus away from minor texture while keeping skin coverage ultra-light.`,
+          `Requires blotting paper touch-ups every 2.5 hours if T-zone sebum score is below 70.`,
+        ],
+        whyItWorksWithOutfit: `Creates a dramatic editorial contrast against ${outfit.name}, ideal for evening reception lighting.`,
+      }
 
   return {
     id: `vto-${outfit.id}-${scan.stage}`,
